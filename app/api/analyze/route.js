@@ -7,7 +7,9 @@ const MOCK_CASE_A = {
     analysis_meta: {
         target_role: "品質保証(QA)エンジニア",
         match_score: 85,
-        match_rating: "A"
+        match_score: 85,
+        match_rating: "A",
+        job_summary: "この求人は、化学メーカーにおける品質保証(QA)エンジニアの募集です。主な業務は、ラボの安全管理プロトコルの設計と運用、およびR&D部門と製造部門間のリエゾン業務です。必須スキルとして、厳格な手順遵守能力とプロセス管理能力が求められます。未経験からの挑戦も可能ですが、論理的思考力とコミュニケーション能力が重視されるポジションです。"
     },
     synergy_points: [
         {
@@ -66,7 +68,9 @@ const MOCK_CASE_B = {
     analysis_meta: {
         target_role: "エンタープライズSaaS営業",
         match_score: 70,
-        match_rating: "B"
+        match_score: 70,
+        match_rating: "B",
+        job_summary: "この求人は、成長中のSaaS企業におけるエンタープライズ向けセールス職の募集です。主な業務は、新規開拓営業として高額商材の提案からクロージングまでを担当することです。必須要件として、粘り強い交渉力と高い目標達成意欲が挙げられます。IT業界未経験者も歓迎されていますが、過去の営業実績（トップセールス経験など）が強く評価される環境です。"
     },
     synergy_points: [
         {
@@ -153,7 +157,8 @@ export async function POST(req) {
             "analysis_meta": {
               "target_role": "String (ターゲット職種名)",
               "match_score": Integer (0-100),
-              "match_rating": "String (S/A/B/C)"
+              "match_rating": "String (S/A/B/C)",
+              "job_summary": "String (求人要件の要約・400文字以内の日本語)"
             },
             "synergy_points": [
               { "category": "String (区分)", "job_requirement": "String (求人要件)", "user_evidence": "String (ユーザーの経験)", "reasoning": "String (理由)" }

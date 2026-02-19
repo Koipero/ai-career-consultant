@@ -13,6 +13,21 @@ export default function AnalysisReport({ data }) {
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "2rem", animation: "fadeIn 0.5s ease" }}>
 
+            {/* Job Summary Section - New Requirement */}
+            <section className="card" style={{ borderLeft: "6px solid var(--accent-primary)" }}>
+                <h3 style={{ fontSize: "1.1rem", marginBottom: "0.5rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span>📝</span> 求人要約
+                </h3>
+                <p style={{
+                    fontSize: "0.95rem",
+                    lineHeight: "1.6",
+                    color: "var(--text-primary)",
+                    whiteSpace: "pre-wrap"
+                }}>
+                    {analysis_meta.job_summary || "要約が生成されませんでした。"}
+                </p>
+            </section>
+
             {/* Meta Section - Card 1 */}
             <div className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
                 <div>
