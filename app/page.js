@@ -1,66 +1,90 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState } from "react";
+import InputForm from "../components/InputForm";
+import AnalysisReport from "../components/AnalysisReport";
 
 export default function Home() {
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Updated to handle payload object from InputForm
+  const handleAnalyze = async (payload) => {
+    setIsLoading(true);
+    setAnalysisResult(null);
+
+    const formData = new FormData();
+
+    // Resume Processing
+    formData.append("resumeType", payload.resume.type);
+    if (payload.resume.type === "file") {
+      // payload.resume.data should be an array of files
+      if (Array.isArray(payload.resume.data)) {
+        payload.resume.data.forEach((file) => {
+          formData.append("resumeFiles", file);
+        });
+      } else if (payload.resume.data) {
+        // Fallback for single file if not array
+        formData.append("resumeFiles", payload.resume.data);
+      }
+    } else {
+      formData.append("resumeText", payload.resume.data);
+    }
+
+    // Job Processing
+    formData.append("jobType", payload.job.type);
+    if (payload.job.type === "file") {
+      formData.append("jobFile", payload.job.data);
+    } else if (payload.job.type === "url") {
+      formData.append("jobUrl", payload.job.data);
+    } else {
+      formData.append("jobText", payload.job.data);
+    }
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData, // Send as FormData
+      });
+
+      if (!response.ok) {
+        throw new Error("Analysis failed");
+      }
+
+      const data = await response.json();
+      setAnalysisResult(data);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("エラーが発生しました。もう一度お試しください。");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setAnalysisResult(null);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ paddingBottom: "2rem" }}>
+      <div style={{ paddingBottom: "2rem" }}>
+        <div style={{ display: analysisResult ? "none" : "block" }}>
+          <InputForm onAnalyze={handleAnalyze} isLoading={isLoading} />
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {analysisResult && (
+          <div style={{ animation: "fadeIn 0.5s ease" }}>
+            <button
+              onClick={handleReset}
+              className="btn btn-secondary"
+              style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", padding: "0.5rem 1rem" }}
+            >
+              <span>←</span> 再分析
+            </button>
+            <AnalysisReport data={analysisResult} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
