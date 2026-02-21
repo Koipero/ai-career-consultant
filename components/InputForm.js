@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function InputForm({ onAnalyze, isLoading }) {
     // Input A State
@@ -8,6 +8,13 @@ export default function InputForm({ onAnalyze, isLoading }) {
     const [resumeText, setResumeText] = useState("");
     const [resumeFiles, setResumeFiles] = useState([]);
     const resumeInputRef = useRef(null);
+
+    useEffect(() => {
+        const storedResume = localStorage.getItem("registeredResume");
+        if (storedResume) {
+            setResumeText(storedResume);
+        }
+    }, []);
 
     // Input B State
     const [jobMode, setJobMode] = useState("text"); // 'text' | 'file' | 'url'

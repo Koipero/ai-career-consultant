@@ -40,7 +40,9 @@ export default function MobileShell({ children }) {
                     <Link href="/star-quest" style={{ textDecoration: "none", color: "white", fontSize: "0.9rem", fontWeight: "600" }}>
                         STAR Quest
                     </Link>
-                    <div style={{ opacity: 0.7 }}>👤</div>
+                    <Link href="/profile" style={{ textDecoration: "none", fontSize: "1.2rem", opacity: 0.9 }}>
+                        👤
+                    </Link>
                 </nav>
             </header>
 
