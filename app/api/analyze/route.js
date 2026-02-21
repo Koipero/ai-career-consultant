@@ -223,8 +223,13 @@ export async function POST(req) {
             }
         } else if (jobType === "url") {
             const url = formData.get("jobUrl");
-            const scrapedText = await scrapeUrl(url);
-            parts.push({ text: `\n\nInput B (求人要件 - URL: ${url}):\n${scrapedText}` });
+            try {
+                const scrapedText = await scrapeUrl(url);
+                parts.push({ text: `\n\nInput B (求人要件 - URL: ${url}):\n${scrapedText}` });
+            } catch (err) {
+                console.error("Scraping error:", err);
+                return NextResponse.json({ error: "指定されたURLから求人情報を取得できませんでした。アクセスがブロックされている可能性があります。テキストで直接入力をお試しください。" }, { status: 400 });
+            }
         } else {
             const text = formData.get("jobText");
             parts.push({ text: `\n\nInput B (求人要件 - テキスト):\n${text}` });
@@ -237,7 +242,6 @@ export async function POST(req) {
         if (apiKey) {
             try {
                 const genAI = new GoogleGenerativeAI(apiKey);
-                // Switch to stable model
                 const model = genAI.getGenerativeModel({ model: "gemini-3.1-pro-preview" });
 
                 console.log("Generating content with Gemini...");
@@ -246,35 +250,36 @@ export async function POST(req) {
                 const text = response.text();
                 console.log("Gemini response received");
 
-                const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                const json = JSON.parse(jsonStr);
-
-                return NextResponse.json(json);
-
+                try {
+                    const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                    const json = JSON.parse(jsonStr);
+                    return NextResponse.json(json);
+                } catch (parseError) {
+                    console.error("Failed to parse Gemini response as JSON:", text);
+                    return NextResponse.json({ error: "AIの応答を解析できませんでした。もう一度お試しください。" }, { status: 500 });
+                }
             } catch (apiError) {
                 console.error("Gemini API Detailed Error:", apiError);
-                // Fallthrough to mock
+                return NextResponse.json({ error: "AIによる分析中にエラーが発生しました。" }, { status: 500 });
             }
         } else {
-            console.warn("No API Key found provided in process.env");
+            console.warn("No API Key found provided in process.env. Using mock data.");
+            // Mock Fallback ONLY if no API key is set
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Simple logic to detect "Sales" in text inputs only (cannot read files in mock)
+            let combinedText = "";
+            if (resumeType === "text") combinedText += formData.get("resumeText");
+            if (jobType === "text") combinedText += formData.get("jobText");
+            if (jobType === "url") combinedText += "sales"; // Fake assumption for URL mock test
+
+            if (combinedText.toLowerCase().includes("sales") || combinedText.includes("営業")) {
+                return NextResponse.json(MOCK_CASE_B);
+            }
+            return NextResponse.json(MOCK_CASE_A);
         }
-
-        // Mock Fallback
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        // Simple logic to detect "Sales" in text inputs only (cannot read files in mock)
-        let combinedText = "";
-        if (resumeType === "text") combinedText += formData.get("resumeText");
-        if (jobType === "text") combinedText += formData.get("jobText");
-        if (jobType === "url") combinedText += "sales"; // Fake assumption for URL mock test
-
-        if (combinedText.toLowerCase().includes("sales") || combinedText.includes("営業")) {
-            return NextResponse.json(MOCK_CASE_B);
-        }
-        return NextResponse.json(MOCK_CASE_A);
-
     } catch (error) {
         console.error("Server Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: "サーバー内部エラーが発生しました。" }, { status: 500 });
     }
 }
