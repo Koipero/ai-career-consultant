@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import mammoth from "mammoth";
-const pdf = require("pdf-parse/lib/pdf-parse.js"); // Next.js(Webpack)との相性問題のため直接ファイルをrequire
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 export async function POST(req) {
     try {
